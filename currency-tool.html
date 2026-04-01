@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>汇率转换工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            max-width: 580px;
+            margin: 30px auto;
+            padding: 0 20px;
+            background: #eef5ff;
+        }
+        .container {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            border: 1px solid #d6e8ff;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #2b85ff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .input-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #c8e0ff;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+            background: #f9fcff;
+        }
+        input:focus {
+            border-color: #2b85ff;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(43, 133, 255, 0.15);
+        }
+        input:disabled {
+            background: #f1f1f1;
+            color: #888;
+            border-color: #ddd;
+        }
+
+        /* 筹码布局：独立标题 + 横向排列 */
+        .chip-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        .chip-item {
+            flex: 1;
+            text-align: center;
+        }
+        .chip-item label {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        /* 核心修复：筹码输入框强制居中 */
+        .chip-item input {
+            text-align: center !important;
+            padding: 12px;
+        }
+
+        /* 筹码总值样式 */
+        .chip-total {
+            width: 120px;
+            text-align: center;
+        }
+        #chipTotal {
+            background: #eef5ff;
+            border-color: #2b85ff;
+            font-weight: bold;
+            color: #2b85ff;
+            cursor: default;
+            text-align: center !important;
+        }
+
+        .btn-box {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+        }
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        /* 重置按钮变蓝色主题，更醒目 */
+        #resetBtn {
+            background: #2b85ff;
+            color: #fff;
+        }
+        #resetBtn:hover {
+            background: #1a75e6;
+        }
+
+        /* 说明文字色彩丰富版 */
+        .info {
+            margin-top: 28px;
+            padding: 18px;
+            background: linear-gradient(to right, #f0f7ff, #e6f2ff);
+            border-left: 5px solid #2b85ff;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #222;
+        }
+        .info strong {
+            color: #2b85ff;
+            font-size: 15px;
+        }
+        .info span {
+            color: #ff6b35;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>汇率转换工具</h2>
+
+    <!-- 1. 筹码计算 -->
+    <label>筹码计算</label>
+    <div class="chip-group">
+        <div class="chip-item">
+            <label>500</label>
+            <input type="number" id="chip500" min="0" placeholder="0">
+        </div>
+        <div class="chip-item">
+            <label>100</label>
+            <input type="number" id="chip100" min="0" placeholder="0">
+        </div>
+        <div class="chip-item">
+            <label>50</label>
+            <input type="number" id="chip50" min="0" placeholder="0">
+        </div>
+        <div class="chip-item">
+            <label>20</label>
+            <input type="number" id="chip20" min="0" placeholder="0">
+        </div>
+        <div class="chip-item">
+            <label>10</label>
+            <input type="number" id="chip10" min="0" placeholder="0">
+        </div>
+        <div class="chip-item chip-total">
+            <label>筹码总值</label>
+            <input type="text" id="chipTotal" disabled placeholder="0">
+        </div>
+    </div>
+
+    <!-- 2. CNY / ￥ -->
+    <div class="input-group">
+        <label>CNY / ￥</label>
+        <input type="number" step="any" id="cny" placeholder="请输入人民币数量">
+    </div>
+
+    <!-- 3. USD / $ -->
+    <div class="input-group">
+        <label>USD / $</label>
+        <input type="number" step="any" id="usd" placeholder="请输入美元数量">
+    </div>
+
+    <!-- 4. BB -->
+    <div class="input-group">
+        <label>BB</label>
+        <input type="number" step="any" id="bb" placeholder="请输入BB数量">
+    </div>
+
+    <div class="btn-box">
+        <button id="resetBtn">重置所有</button>
+    </div>
+
+    <div class="info">
+        <strong>📊 汇率计算方式：</strong><br>
+        1 BB = 0.02 USD（$），<span>比例 50 倍</span><br>
+        1 USD（$） = 6.9038 CNY（￥）<br>
+        1000 筹码 = 40 元 CNY（￥）<br><br>
+        <strong>🧮 计算公式：</strong><br>
+        BB = USD × 50<br>
+        USD = BB ÷ 50<br>
+        CNY = USD × 6.9038<br>
+        USD = CNY ÷ 6.9038<br>
+        筹码总额 = 500×a + 100×b + 50×c + 20×d +10×e<br>
+        筹码对应 CNY = 总额 × 0.04<br><br>
+        <strong>💡 使用说明：</strong><br>
+        <span>输入筹码时，BB / USD 自动禁用</span><br>
+        填写任意一项自动计算全部结果，统一保留 4 位小数<br>
+        按 Enter 快捷计算，点击重置清空所有内容
+    </div>
+</div>
+
+<script>
+    const usdInput = document.getElementById('usd');
+    const bbInput = document.getElementById('bb');
+    const cnyInput = document.getElementById('cny');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const chip500 = document.getElementById('chip500');
+    const chip100 = document.getElementById('chip100');
+    const chip50 = document.getElementById('chip50');
+    const chip20 = document.getElementById('chip20');
+    const chip10 = document.getElementById('chip10');
+    const chipTotal = document.getElementById('chipTotal');
+    const chipInputs = [chip500, chip100, chip50, chip20, chip10];
+
+    const RATE_BB_USD = 0.02;
+    const RATE_USD_CNY = 6.9038;
+    const CHIP_TO_CNY = 0.04;
+
+    function format(num) {
+        return parseFloat(num).toFixed(4);
+    }
+
+    // 禁用/启用 USD + BB
+    function disableBBUSD(disabled) {
+        bbInput.disabled = disabled;
+        usdInput.disabled = disabled;
+        if (disabled) {
+            bbInput.value = '';
+            usdInput.value = '';
+        }
+    }
+
+    // 计算筹码 + 总值 + CNY
+    function calcChip() {
+        const c500 = parseInt(chip500.value) || 0;
+        const c100 = parseInt(chip100.value) || 0;
+        const c50 = parseInt(chip50.value) || 0;
+        const c20 = parseInt(chip20.value) || 0;
+        const c10 = parseInt(chip10.value) || 0;
+
+        // 计算筹码总额并显示
+        const total = c500*500 + c100*100 + c50*50 + c20*20 + c10*10;
+        chipTotal.value = total;
+
+        // 计算对应人民币
+        const cny = total * CHIP_TO_CNY;
+        cnyInput.value = format(cny);
+
+        disableBBUSD(true);
+    }
+
+    function calcFromUSD() {
+        disableBBUSD(false);
+        const usd = parseFloat(usdInput.value) || 0;
+        const bb = usd / RATE_BB_USD;
+        const cny = usd * RATE_USD_CNY;
+
+        bbInput.value = format(bb);
+        cnyInput.value = format(cny);
+        clearChips();
+    }
+
+    function calcFromBB() {
+        disableBBUSD(false);
+        const bb = parseFloat(bbInput.value) || 0;
+        const usd = bb * RATE_BB_USD;
+        const cny = usd * RATE_USD_CNY;
+
+        usdInput.value = format(usd);
+        cnyInput.value = format(cny);
+        clearChips();
+    }
+
+    function calcFromCNY() {
+        disableBBUSD(false);
+        const cny = parseFloat(cnyInput.value) || 0;
+        const usd = cny / RATE_USD_CNY;
+        const bb = usd / RATE_BB_USD;
+
+        bbInput.value = format(bb);
+        usdInput.value = format(usd);
+        clearChips();
+    }
+
+    // 清空筹码
+    function clearChips() {
+        chipInputs.forEach(i => i.value = '');
+        chipTotal.value = '0';
+    }
+
+    // 事件绑定
+    usdInput.addEventListener('input', calcFromUSD);
+    bbInput.addEventListener('input', calcFromBB);
+    cnyInput.addEventListener('input', calcFromCNY);
+    chipInputs.forEach(i => i.addEventListener('input', calcChip));
+
+    // 回车快捷计算
+    usdInput.addEventListener('keydown', e => e.key === 'Enter' && calcFromUSD());
+    bbInput.addEventListener('keydown', e => e.key === 'Enter' && calcFromBB());
+    cnyInput.addEventListener('keydown', e => e.key === 'Enter' && calcFromCNY());
+    chipInputs.forEach(i => i.addEventListener('keydown', e => e.key === 'Enter' && calcChip()));
+
+    // 重置
+    resetBtn.addEventListener('click', () => {
+        usdInput.value = '';
+        bbInput.value = '';
+        cnyInput.value = '';
+        clearChips();
+        disableBBUSD(false);
+    });
+</script>
+</body>
+</html>
