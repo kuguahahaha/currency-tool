@@ -76,6 +76,18 @@
             color: #999;
         }
 
+        /* 🔴 核心修复1：彻底隐藏数字输入框上下箭头（全浏览器兼容） */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+            display: none;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
         /* 筹码布局：微信适配强化 */
         .chip-group {
             display: -webkit-box;
@@ -107,6 +119,8 @@
             padding: 10px 4px;
             font-size: 15px;
             -webkit-text-align: center !important;
+            /* 🔴 核心修复2：筹码输入框默认空，无0 */
+            placeholder="0";
         }
 
         /* 筹码总值样式 */
@@ -186,23 +200,23 @@
     <div class="chip-group">
         <div class="chip-item">
             <label>500</label>
-            <input type="number" id="chip500" min="0" placeholder="0" value="0">
+            <input type="number" id="chip500" min="0" placeholder="">
         </div>
         <div class="chip-item">
             <label>100</label>
-            <input type="number" id="chip100" min="0" placeholder="0" value="0">
+            <input type="number" id="chip100" min="0" placeholder="">
         </div>
         <div class="chip-item">
             <label>50</label>
-            <input type="number" id="chip50" min="0" placeholder="0" value="0">
+            <input type="number" id="chip50" min="0" placeholder="">
         </div>
         <div class="chip-item">
             <label>20</label>
-            <input type="number" id="chip20" min="0" placeholder="0" value="0">
+            <input type="number" id="chip20" min="0" placeholder="">
         </div>
         <div class="chip-item">
             <label>10</label>
-            <input type="number" id="chip10" min="0" placeholder="0" value="0">
+            <input type="number" id="chip10" min="0" placeholder="">
         </div>
         <div class="chip-item chip-total">
             <label>筹码总值</label>
@@ -294,7 +308,7 @@
         const c10 = parseInt(chip10.value) || 0;
 
         const total = c500*500 + c100*100 + c50*50 + c20*20 + c10*10;
-        chipTotal.value = total;
+        chipTotal.value = total || 0;
 
         const cny = total * CHIP_TO_CNY;
         cnyInput.value = format(cny);
@@ -338,7 +352,7 @@
     // 清空筹码
     function clearChips() {
         chipInputs.forEach(i => {
-            i.value = '0';
+            i.value = '';
         });
         chipTotal.value = '0';
     }
