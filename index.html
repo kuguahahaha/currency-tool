@@ -140,6 +140,27 @@
             -webkit-text-fill-color: #2b85ff !important;
         }
 
+        /* 海宝筹码颜色标签 */
+        .chip-red label { color: #e53935; }
+        .chip-yellow label { color: #f9a825; }
+        .chip-blue label { color: #1976d2; }
+        .chip-white label { color: #555; }
+        .chip-black label { color: #212121; }
+
+        #haibaoChipTotal {
+            background: #fff3e0 !important;
+            border-color: #ff9800 !important;
+            font-weight: bold;
+            color: #e65100 !important;
+            cursor: default;
+            text-align: center !important;
+            -webkit-text-fill-color: #e65100 !important;
+        }
+
+        .chip-section-title {
+            margin-bottom: 8px;
+        }
+
         .btn-box {
             display: -webkit-box;
             display: -ms-flexbox;
@@ -196,7 +217,9 @@
     <h2>汇率转换工具</h2>
 
     <!-- 1. 筹码计算 -->
-    <label>筹码计算</label>
+    <div class="chip-section-title">
+        <label>筹码计算</label>
+    </div>
     <div class="chip-group">
         <div class="chip-item">
             <label>500</label>
@@ -221,6 +244,37 @@
         <div class="chip-item chip-total">
             <label>筹码总值</label>
             <input type="text" id="chipTotal" disabled placeholder="0" value="0">
+        </div>
+    </div>
+
+    <!-- 2. 筹码计算（海宝） -->
+    <div class="chip-section-title" style="margin-top: 20px;">
+        <label>筹码计算（海宝）</label>
+    </div>
+    <div class="chip-group">
+        <div class="chip-item chip-red">
+            <label>2W（红）</label>
+            <input type="number" id="haibao20000" min="0" placeholder="">
+        </div>
+        <div class="chip-item chip-yellow">
+            <label>5K（黄）</label>
+            <input type="number" id="haibao5000" min="0" placeholder="">
+        </div>
+        <div class="chip-item chip-blue">
+            <label>1K（蓝）</label>
+            <input type="number" id="haibao1000" min="0" placeholder="">
+        </div>
+        <div class="chip-item chip-white">
+            <label>500（白）</label>
+            <input type="number" id="haibao500" min="0" placeholder="">
+        </div>
+        <div class="chip-item chip-black">
+            <label>100（黑）</label>
+            <input type="number" id="haibao100" min="0" placeholder="">
+        </div>
+        <div class="chip-item chip-total">
+            <label>筹码总值（万）</label>
+            <input type="text" id="haibaoChipTotal" disabled placeholder="0" value="0">
         </div>
     </div>
 
@@ -257,9 +311,12 @@
         CNY = USD × 6.9038<br>
         USD = CNY ÷ 6.9038<br>
         筹码总额 = 500×a + 100×b + 50×c + 20×d +10×e<br>
-        筹码对应 CNY = 总额 × 0.04<br><br>
+        筹码对应 CNY = 总额 × 0.04<br>
+        海宝筹码总额 = 20000×a + 5000×b + 1000×c + 500×d + 100×e<br>
+        海宝筹码总值（万） = 总额 ÷ 10000<br><br>
         <strong>💡 使用说明：</strong><br>
         <span>输入筹码时，BB / USD 自动禁用</span><br>
+        两套筹码计算互斥，输入其中一套自动清空另一套<br>
         填写任意一项自动计算全部结果，统一保留 4 位小数<br>
         按 Enter 快捷计算，点击重置清空所有内容
     </div>
@@ -278,6 +335,14 @@
     const chip10 = document.getElementById('chip10');
     const chipTotal = document.getElementById('chipTotal');
     const chipInputs = [chip500, chip100, chip50, chip20, chip10];
+
+    const haibao20000 = document.getElementById('haibao20000');
+    const haibao5000 = document.getElementById('haibao5000');
+    const haibao1000 = document.getElementById('haibao1000');
+    const haibao500 = document.getElementById('haibao500');
+    const haibao100 = document.getElementById('haibao100');
+    const haibaoChipTotal = document.getElementById('haibaoChipTotal');
+    const haibaoChipInputs = [haibao20000, haibao5000, haibao1000, haibao500, haibao100];
 
     const RATE_BB_USD = 0.02;
     const RATE_USD_CNY = 6.9038;
@@ -314,6 +379,23 @@
         cnyInput.value = format(cny);
 
         disableBBUSD(true);
+        clearHaibaoChips();
+    }
+
+    // 计算海宝筹码 + 总值（万）
+    function calcHaibaoChip() {
+        const c20000 = parseInt(haibao20000.value) || 0;
+        const c5000 = parseInt(haibao5000.value) || 0;
+        const c1000 = parseInt(haibao1000.value) || 0;
+        const c500 = parseInt(haibao500.value) || 0;
+        const c100 = parseInt(haibao100.value) || 0;
+
+        const total = c20000*20000 + c5000*5000 + c1000*1000 + c500*500 + c100*100;
+        const totalWan = total / 10000;
+        haibaoChipTotal.value = totalWan || 0;
+
+        disableBBUSD(true);
+        clearChips();
     }
 
     function calcFromUSD() {
@@ -325,6 +407,7 @@
         bbInput.value = format(bb);
         cnyInput.value = format(cny);
         clearChips();
+        clearHaibaoChips();
     }
 
     function calcFromBB() {
@@ -336,6 +419,7 @@
         usdInput.value = format(usd);
         cnyInput.value = format(cny);
         clearChips();
+        clearHaibaoChips();
     }
 
     function calcFromCNY() {
@@ -347,6 +431,7 @@
         bbInput.value = format(bb);
         usdInput.value = format(usd);
         clearChips();
+        clearHaibaoChips();
     }
 
     // 清空筹码
@@ -355,6 +440,14 @@
             i.value = '';
         });
         chipTotal.value = '0';
+    }
+
+    // 清空海宝筹码
+    function clearHaibaoChips() {
+        haibaoChipInputs.forEach(i => {
+            i.value = '';
+        });
+        haibaoChipTotal.value = '0';
     }
 
     // 微信兼容事件绑定（添加input+change双事件）
@@ -367,6 +460,10 @@
     chipInputs.forEach(i => {
         i.addEventListener('input', calcChip);
         i.addEventListener('change', calcChip);
+    });
+    haibaoChipInputs.forEach(i => {
+        i.addEventListener('input', calcHaibaoChip);
+        i.addEventListener('change', calcHaibaoChip);
     });
 
     // 回车快捷计算
@@ -384,6 +481,11 @@
             if (e.key === 'Enter') calcChip();
         });
     });
+    haibaoChipInputs.forEach(i => {
+        i.addEventListener('keydown', e => {
+            if (e.key === 'Enter') calcHaibaoChip();
+        });
+    });
 
     // 重置（微信兼容）
     resetBtn.addEventListener('click', () => {
@@ -391,12 +493,14 @@
         bbInput.value = '';
         cnyInput.value = '';
         clearChips();
+        clearHaibaoChips();
         disableBBUSD(false);
     });
 
     // 页面加载初始化
     window.onload = function() {
         clearChips();
+        clearHaibaoChips();
         disableBBUSD(false);
     };
 </script>
